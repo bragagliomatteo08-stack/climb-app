@@ -442,7 +442,8 @@
       <div class="settings-group">
         <h3>Dati</h3>
         <p>Usa il backup prima di cambiare telefono o browser.</p>
-        <div class="settings-row"><span>Esporta o ripristina i dati</span><button type="button" id="btn-settings-backup">Gestisci backup</button></div>
+        <div class="settings-row"><span>Esporta i tuoi dati</span><button type="button" id="btn-settings-backup">Esporta backup</button></div>
+        <div class="settings-row"><span>Ripristina un backup</span><button type="button" id="btn-settings-restore">Ripristina</button></div>
       </div>
     </div>
   </section>
@@ -1262,6 +1263,7 @@
     vibrationEl.addEventListener('change',function(){timerSettings.vibration=vibrationEl.checked;saveTimerSettings();});
     notifyBtn.addEventListener('click',function(){if(window.Notification&&Notification.permission==='default'){Notification.requestPermission().then(updateNotificationStatus);}else{updateNotificationStatus();}});
     document.getElementById('btn-settings-backup').addEventListener('click',function(){document.getElementById('btn-export').click();});
+    document.getElementById('btn-settings-restore').addEventListener('click',function(){document.getElementById('btn-import').click();});
     updateNotificationStatus();
   }
 
