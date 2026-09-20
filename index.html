@@ -279,6 +279,19 @@
   nav.tabbar button{position:relative}
   .tab-dot{position:absolute;top:2px;right:calc(50% - 20px);width:7px;height:7px;border-radius:50%;background:var(--alta);display:none}
   .tab-dot.show{display:block}
+
+  .legacy-sensazioni{display:none!important}
+  .settings-group{padding:14px 0;border-bottom:1px solid var(--border)}
+  .settings-group:last-child{border-bottom:0}
+  .settings-group h3{font-size:14px;margin:0 0 4px}
+  .settings-group p{font-size:12px;color:var(--muted);margin:0 0 10px}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;font-size:14px}
+  .settings-row input[type="checkbox"]{width:20px;height:20px;accent-color:var(--text)}
+  .settings-row select{width:auto;min-width:92px;margin:0}
+  .settings-row button{font-family:inherit;font-size:12px;padding:7px 10px;border:1px solid var(--border);background:var(--surface);border-radius:3px;color:var(--text);cursor:pointer}
+  .timer.finished{background:var(--alta);animation:timerPulse 1s ease-in-out infinite}
+  .timer.finished .timer-label{font-weight:800;opacity:1}
+  @keyframes timerPulse{50%{transform:scale(1.01);box-shadow:0 0 0 5px rgba(193,61,45,.16)}}
 </style>
 </head>
 <body>
@@ -286,7 +299,7 @@
 <header class="top">
   <div class="kicker">Programma settimanale · arrampicata</div>
   <h1>La tua scheda</h1>
-  <div class="sub">Il piano della tua coach, sempre a portata di mano — con diario delle sensazioni e tracciamento dei progressi.</div>
+  <div class="sub">Il piano della tua coach, sempre a portata di mano — con registrazione veloce delle sessioni e dei progressi.</div>
   <div class="backup-actions">
     <button type="button" id="btn-export" class="backup-btn">⇩ Backup dati</button>
     <button type="button" id="btn-import" class="backup-btn">⇧ Ripristina backup</button>
@@ -323,7 +336,7 @@
   </section>
 
   <!-- ============ SENSAZIONI ============ -->
-  <section id="view-sensazioni" class="view">
+  <section id="view-sensazioni" class="view legacy-sensazioni" aria-hidden="true">
     <div class="panel">
       <h2>Come è andata oggi?</h2>
       <p class="hint">Un check-in veloce dopo l'allenamento: energia, umore e due righe di note.</p>
@@ -383,6 +396,8 @@
           <div><label for="ss-giorno">Allenamento</label><select id="ss-giorno"></select></div>
           <div><label for="ss-durata">Durata (min)</label><input type="number" id="ss-durata" min="0" max="300" placeholder="75"></div>
           <div><label for="ss-rpe">Fatica finale (1–10)</label><input type="number" id="ss-rpe" min="1" max="10" placeholder="7"></div>
+          <div><label for="ss-energia">Energia (1–5)</label><select id="ss-energia"><option value="">—</option><option value="1">1 · scarica</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · piena</option></select></div>
+          <div><label for="ss-umore">Umore (1–5)</label><select id="ss-umore"><option value="">—</option><option value="1">1 · basso</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · ottimo</option></select></div>
           <div id="session-specific" class="full"></div>
           <div class="full"><label for="ss-note">Cosa ha funzionato / cosa no</label><textarea id="ss-note" placeholder="Solo ciò che vale la pena ricordare per il prossimo allenamento..."></textarea></div>
         </div>
@@ -397,8 +412,8 @@
 
     <div class="panel">
       <h2>Timer recupero</h2>
-      <p class="hint">Preset coerenti con la scheda: forza/potenza 3–5 min, trazioni 2–4 min. Suono e vibrazione a fine recupero.</p>
-      <div class="timer"><div class="timer-label" id="timer-label">Recupero 3:00</div><div class="time" id="timer-display">03:00</div><div class="timer-controls"><button type="button" data-sec="120">2:00</button><button type="button" data-sec="180">3:00</button><button type="button" data-sec="240">4:00</button><button type="button" data-sec="300">5:00</button></div><div class="timer-controls"><button type="button" id="timer-start">Avvia</button><button type="button" id="timer-reset">Reset</button></div></div>
+      <p class="hint">Il suono viene preparato quando tocchi Avvia. A fine recupero l’app mostra un avviso evidente e usa suono, vibrazione e notifica se li hai attivati.</p>
+      <div class="timer" id="timer"><div class="timer-label" id="timer-label">Recupero 3:00</div><div class="time" id="timer-display">03:00</div><div class="timer-controls"><button type="button" data-sec="120">2:00</button><button type="button" data-sec="180">3:00</button><button type="button" data-sec="240">4:00</button><button type="button" data-sec="300">5:00</button></div><div class="timer-controls"><button type="button" id="timer-start">Avvia</button><button type="button" id="timer-reset">Reset</button></div></div>
     </div>
 
     <div class="panel session-history">
@@ -407,6 +422,28 @@
       <div id="session-chart"></div>
       <div id="session-list"></div>
       <div class="clear-link" id="clear-sessioni">Cancella storico sessioni</div>
+    </div>
+  </section>
+
+  <!-- ============ IMPOSTAZIONI ============ -->
+  <section id="view-impostazioni" class="view">
+    <div class="panel">
+      <h2>Impostazioni</h2>
+      <p class="hint">Solo le preferenze che cambiano davvero il modo in cui usi l’app.</p>
+      <div class="settings-group">
+        <h3>Timer</h3>
+        <p>La durata predefinita si applica al prossimo recupero.</p>
+        <div class="settings-row"><label for="set-timer-default">Recupero predefinito</label><select id="set-timer-default"><option value="120">2 minuti</option><option value="180">3 minuti</option><option value="240">4 minuti</option><option value="300">5 minuti</option></select></div>
+        <div class="settings-row"><label for="set-sound">Suono alla fine</label><input id="set-sound" type="checkbox"></div>
+        <div class="settings-row"><label for="set-vibration">Vibrazione alla fine</label><input id="set-vibration" type="checkbox"></div>
+        <div class="settings-row"><span>Notifiche di sistema</span><button type="button" id="btn-notifications">Abilita</button></div>
+        <p id="notification-status">Le notifiche possono aiutare, ma il telefono può comunque sospendere un sito in background.</p>
+      </div>
+      <div class="settings-group">
+        <h3>Dati</h3>
+        <p>Usa il backup prima di cambiare telefono o browser.</p>
+        <div class="settings-row"><span>Esporta o ripristina i dati</span><button type="button" id="btn-settings-backup">Gestisci backup</button></div>
+      </div>
     </div>
   </section>
 
@@ -447,23 +484,10 @@
 </main>
 
 <nav class="tabbar">
-  <button data-tab="programma" class="active">
-    <svg viewBox="0 0 24 24"><path d="M3 19h18M4 19 10 7l3 5 2-3 5 10"/></svg>
-    Programma
-  </button>
-  <button data-tab="sensazioni">
-    <svg viewBox="0 0 24 24"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg>
-    Sensazioni
-  </button>
-  <button data-tab="progressi">
-    <svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V4m6 15v-7m-9 7 3 3"/></svg>
-    Progressi
-  </button>
-  <button data-tab="sessione">
-    <span class="tab-dot" id="session-tab-dot"></span>
-    <svg viewBox="0 0 24 24"><path d="M6 4h12M6 20h12M8 4v4l4 4-4 4v4m8-16v4l-4 4 4 4v4"/></svg>
-    Sessione
-  </button>
+  <button data-tab="programma" class="active"><svg viewBox="0 0 24 24"><path d="M3 19h18M4 19 10 7l3 5 2-3 5 10"/></svg>Programma</button>
+  <button data-tab="sessione"><span class="tab-dot" id="session-tab-dot"></span><svg viewBox="0 0 24 24"><path d="M6 4h12M6 20h12M8 4v4l4 4-4 4v4m8-16v4l-4 4 4 4v4"/></svg>Sessione</button>
+  <button data-tab="progressi"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V4m6 15v-7m-9 7 3 3"/></svg>Progressi</button>
+  <button data-tab="impostazioni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 2-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-2.8v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-2-2 .1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H5.7v-2.8h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L7 8.2l2-2 .1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h2.8v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 2 2-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2V14h-.2a1.7 1.7 0 0 0-1.5 1Z"/></svg>Impostazioni</button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -982,6 +1006,8 @@
     document.getElementById('ss-durata').value = entry.durata || '';
     document.getElementById('ss-rpe').value = entry.rpe || '';
     document.getElementById('ss-note').value = entry.note || '';
+    document.getElementById('ss-energia').value = entry.energia || '';
+    document.getElementById('ss-umore').value = entry.umore || '';
     document.getElementById('editing-flag').style.display = 'flex';
     document.getElementById('session-submit-btn').textContent = 'Aggiorna sessione';
     document.getElementById('pr-banners').innerHTML = '';
@@ -999,6 +1025,8 @@
     document.getElementById('ss-note').value = '';
     document.getElementById('ss-durata').value = '';
     document.getElementById('ss-rpe').value = '';
+    document.getElementById('ss-energia').value = '';
+    document.getElementById('ss-umore').value = '';
   }
   document.getElementById('editing-cancel').addEventListener('click', cancelEditSession);
 
@@ -1006,7 +1034,7 @@
     e.preventDefault(); var d=programma[parseInt(daySelect.value)||0];
     var specific={}; document.querySelectorAll('#session-specific input').forEach(function(x){specific[x.id]=x.value.trim();});
     var isEdit = !!editingSessionId;
-    var entry={id:isEdit?editingSessionId:(Date.now()+'_'+Math.random().toString(36).slice(2,7)),data:ssData.value||todayISO(),giorno:d.full,titolo:d.title,dIdx:parseInt(daySelect.value)||0,durata:document.getElementById('ss-durata').value,rpe:document.getElementById('ss-rpe').value,specific:specific,note:document.getElementById('ss-note').value.trim()};
+    var entry={id:isEdit?editingSessionId:(Date.now()+'_'+Math.random().toString(36).slice(2,7)),data:ssData.value||todayISO(),giorno:d.full,titolo:d.title,dIdx:parseInt(daySelect.value)||0,durata:document.getElementById('ss-durata').value,rpe:document.getElementById('ss-rpe').value,energia:document.getElementById('ss-energia').value,umore:document.getElementById('ss-umore').value,specific:specific,note:document.getElementById('ss-note').value.trim()};
     if(isEdit){
       var idx = sessionData.findIndex(function(x){ return x.id === editingSessionId; });
       if(idx >= 0) sessionData[idx] = entry; else sessionData.push(entry);
@@ -1042,6 +1070,8 @@
         +'<div class="entry-badges"><span class="badge" style="background:var(--bassa)">'+esc(e.giorno)+'</span>'
         +(e.rpe?'<span class="badge" style="background:var(--moderata)">RPE '+esc(e.rpe)+'/10</span>':'')
         +(e.durata?'<span class="badge" style="background:var(--recupero)">'+esc(e.durata)+' min</span>':'')
+        +(e.energia?'<span class="badge" style="background:var(--bassa)">Energia '+esc(e.energia)+'/5</span>':'')
+        +(e.umore?'<span class="badge" style="background:#8A6FB0">Umore '+esc(e.umore)+'/5</span>':'')
         +(painParts.length?'<span class="badge" style="background:var(--alta)">Dolore: '+esc(painParts.join(' · '))+'</span>':'')
         +'</div><p class="entry-desc">'+esc(e.titolo)+'</p>'
         +(vals.length?'<p class="entry-text">'+vals.join(' · ')+'</p>':'')
@@ -1085,59 +1115,70 @@
   }
   document.getElementById('clear-sessioni').addEventListener('click',function(){if(confirm('Cancellare tutto lo storico delle sessioni?')){sessionData=[];saveArr(SESSION_KEY,sessionData);renderSessioni();renderSessionChart();updateTodayFlagSession();refreshLinkOptions();}});
 
-  /* Timer recuperi — robusto (basato su orario di fine, non su un conteggio a scalare)
-     e con suono + vibrazione al termine, così avvisa anche se il telefono è appoggiato. */
-  var timerSec=180, timerEndAt=null, timerRunning=false, timerTick=null;
+  /* Timer: il conteggio usa un orario di fine e si riallinea al ritorno nell'app. */
+  var TIMER_SETTINGS_KEY = "arrampicata_timer_settings_v1";
+  var timerSettings = {defaultSec:180, sound:true, vibration:true};
+  try{ timerSettings = Object.assign(timerSettings, JSON.parse(localStorage.getItem(TIMER_SETTINGS_KEY)||"{}")); }catch(e){}
+  var timerSec=Number(timerSettings.defaultSec)||180, timerEndAt=null, timerRunning=false, timerTick=null, timerFinished=false, timerAudioCtx=null;
+  function saveTimerSettings(){ try{localStorage.setItem(TIMER_SETTINGS_KEY,JSON.stringify(timerSettings));}catch(e){} }
   function paintTimer(remaining){
     if(typeof remaining !== 'number') remaining = timerSec;
     remaining = Math.max(0, remaining);
-    var m=Math.floor(remaining/60), s=remaining%60;
-    document.getElementById('timer-display').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    document.getElementById('timer-label').textContent='Recupero '+String(Math.floor(timerSec/60))+':'+String(timerSec%60).padStart(2,'0');
+    var m=Math.floor(remaining/60), sec=remaining%60;
+    document.getElementById('timer-display').textContent=String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+    document.getElementById('timer-label').textContent=timerFinished?'RECUPERO FINITO':'Recupero '+String(Math.floor(timerSec/60))+':'+String(timerSec%60).padStart(2,'0');
+    document.getElementById('timer').classList.toggle('finished',timerFinished);
+  }
+  function prepareTimerAudio(){
+    try{
+      var Ctx=window.AudioContext||window.webkitAudioContext;
+      if(!Ctx) return;
+      if(!timerAudioCtx) timerAudioCtx=new Ctx();
+      if(timerAudioCtx.state==='suspended') timerAudioCtx.resume();
+    }catch(e){}
   }
   function playTimerAlert(){
-    try{
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if(Ctx){
-        var ctx = new Ctx();
-        [0,0.22,0.44].forEach(function(delay){
-          var osc = ctx.createOscillator(), gain = ctx.createGain();
-          osc.type='sine'; osc.frequency.value=880;
-          gain.gain.setValueAtTime(0.0001, ctx.currentTime+delay);
-          gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime+delay+0.02);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+delay+0.18);
-          osc.connect(gain); gain.connect(ctx.destination);
-          osc.start(ctx.currentTime+delay); osc.stop(ctx.currentTime+delay+0.2);
+    if(timerSettings.sound && timerAudioCtx){
+      try{
+        [0,0.24,0.48].forEach(function(delay){
+          var osc=timerAudioCtx.createOscillator(), gain=timerAudioCtx.createGain();
+          osc.type='square'; osc.frequency.value=880;
+          gain.gain.setValueAtTime(0.0001,timerAudioCtx.currentTime+delay);
+          gain.gain.exponentialRampToValueAtTime(0.24,timerAudioCtx.currentTime+delay+0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001,timerAudioCtx.currentTime+delay+0.19);
+          osc.connect(gain); gain.connect(timerAudioCtx.destination);
+          osc.start(timerAudioCtx.currentTime+delay); osc.stop(timerAudioCtx.currentTime+delay+0.21);
         });
-      }
-    }catch(e){}
-    try{ if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]); }catch(e){}
+      }catch(e){}
+    }
+    try{if(timerSettings.vibration&&navigator.vibrate) navigator.vibrate([250,120,250,120,350]);}catch(e){}
+    try{if(window.Notification&&Notification.permission==='granted') new Notification('CLIMB — recupero finito',{body:'Pronto per la prossima serie.',tag:'climb-recovery'});}catch(e){}
+  }
+  function finishTimer(){
+    if(timerFinished) return;
+    timerRunning=false; timerEndAt=null; timerFinished=true; clearTimeout(timerTick);
+    paintTimer(0); playTimerAlert(); toast('Recupero finito ✓');
   }
   function tickTimer(){
     if(!timerRunning) return;
-    var remaining = Math.round((timerEndAt - Date.now())/1000);
-    if(remaining <= 0){
-      paintTimer(0); timerRunning=false; timerEndAt=null;
-      playTimerAlert(); toast('Recupero finito ✓');
-      return;
-    }
-    paintTimer(remaining);
-    timerTick = setTimeout(tickTimer, 250);
+    var remaining=Math.ceil((timerEndAt-Date.now())/1000);
+    if(remaining<=0){finishTimer();return;}
+    paintTimer(remaining); timerTick=setTimeout(tickTimer,250);
   }
   document.querySelectorAll('.timer-controls button[data-sec]').forEach(function(b){
     b.addEventListener('click',function(){
-      timerSec=parseInt(b.dataset.sec); timerRunning=false; timerEndAt=null;
+      timerSec=parseInt(b.dataset.sec); timerRunning=false; timerEndAt=null; timerFinished=false;
       clearTimeout(timerTick); paintTimer(timerSec);
     });
   });
   document.getElementById('timer-start').addEventListener('click',function(){
     if(timerRunning) return;
-    timerRunning=true; timerEndAt=Date.now()+timerSec*1000;
-    tickTimer();
+    prepareTimerAudio(); timerFinished=false; timerRunning=true; timerEndAt=Date.now()+timerSec*1000; tickTimer();
   });
   document.getElementById('timer-reset').addEventListener('click',function(){
-    timerRunning=false; timerEndAt=null; clearTimeout(timerTick); paintTimer(timerSec);
+    timerRunning=false; timerEndAt=null; timerFinished=false; clearTimeout(timerTick); paintTimer(timerSec);
   });
+  document.addEventListener('visibilitychange',function(){if(!document.hidden&&timerRunning) tickTimer();});
   paintTimer(timerSec); renderSessioni(); renderSessionChart(); updateTodayFlagSession();
 
   /* ---------------- TABS ---------------- */
@@ -1162,6 +1203,7 @@
         sensazioni: loadArr(SENS_KEY),
         progressi: loadArr(PROG_KEY),
         sessioni: loadArr(SESSION_KEY),
+        impostazioni_timer: timerSettings,
         esportato_il: new Date().toISOString()
       };
       var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
@@ -1190,6 +1232,7 @@
         if(Array.isArray(data.sensazioni)) saveArr(SENS_KEY, data.sensazioni);
         if(Array.isArray(data.progressi)) saveArr(PROG_KEY, data.progressi);
         if(Array.isArray(data.sessioni)) saveArr(SESSION_KEY, data.sessioni);
+        if(data.impostazioni_timer){ timerSettings=Object.assign(timerSettings,data.impostazioni_timer); saveTimerSettings(); }
         sensData = loadArr(SENS_KEY);
         progData = loadArr(PROG_KEY);
         sessionData = loadArr(SESSION_KEY);
@@ -1205,6 +1248,21 @@
       }
     };
     reader.readAsText(file);
+  }
+
+  function initSettings(){
+    var defaultEl=document.getElementById('set-timer-default'), soundEl=document.getElementById('set-sound'), vibrationEl=document.getElementById('set-vibration'), notifyBtn=document.getElementById('btn-notifications'), notifyStatus=document.getElementById('notification-status');
+    defaultEl.value=String(timerSettings.defaultSec); soundEl.checked=!!timerSettings.sound; vibrationEl.checked=!!timerSettings.vibration;
+    function updateNotificationStatus(){
+      if(!window.Notification){notifyStatus.textContent='Le notifiche non sono supportate da questo browser.';notifyBtn.disabled=true;return;}
+      var p=Notification.permission; notifyStatus.textContent=p==='granted'?'Notifiche abilitate.':'Notifiche '+(p==='denied'?'bloccate dal browser.':'non ancora abilitate.'); notifyBtn.textContent=p==='granted'?'Abilitate':'Abilita';
+    }
+    defaultEl.addEventListener('change',function(){timerSettings.defaultSec=Number(defaultEl.value);saveTimerSettings();if(!timerRunning){timerSec=timerSettings.defaultSec;timerFinished=false;paintTimer(timerSec);}});
+    soundEl.addEventListener('change',function(){timerSettings.sound=soundEl.checked;saveTimerSettings();});
+    vibrationEl.addEventListener('change',function(){timerSettings.vibration=vibrationEl.checked;saveTimerSettings();});
+    notifyBtn.addEventListener('click',function(){if(window.Notification&&Notification.permission==='default'){Notification.requestPermission().then(updateNotificationStatus);}else{updateNotificationStatus();}});
+    document.getElementById('btn-settings-backup').addEventListener('click',function(){document.getElementById('btn-export').click();});
+    updateNotificationStatus();
   }
 
   function initChrome(){
@@ -1237,6 +1295,7 @@
         fileInput.value = "";
       });
     }
+    initSettings();
   }
 
   /* ---------------- INIT ---------------- */
