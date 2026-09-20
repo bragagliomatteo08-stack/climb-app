@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#111111">
 <meta charset="UTF-8">
 <title>Scheda Allenamento — Arrampicata</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1239,6 +1241,13 @@
   refreshLinkOptions(); /* qui i dati di sessione sono già caricati: risolve la casella vuota */
   initChrome();
 })();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
 </script>
 </body>
 </html>
